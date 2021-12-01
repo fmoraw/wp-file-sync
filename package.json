@@ -1,16 +1,27 @@
 {
-  "name": "wordpress-file-sync",
+  "name": "@figl/wp-file-sync",
   "version": "1.0.0",
   "description": "Syncs files from a password protected wordpress page to a local directory",
   "scripts": {
-    "build": "rm -rf build && tsc && rm -r build/__tests__",
-    "start": "npm run build && node build/index.js",
+    "build": "rm -rf lib && tsc && rm -r lib/__tests__",
+    "start": "npm run build && node lib/index.js",
     "test": "jest src --verbose",
-    "lint": "eslint src -c ./eslint.json --ext .ts"
+    "lint": "eslint src -c ./eslint.json --ext .ts",
+    "prepublish": "npm run build"
   },
-  "files": ["build"],
+  "main": "index.js",
+  "files": [
+    "lib"
+  ],
   "author": "figl",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fmoraw/wp-file-sync"
+  },
+  "bin": {
+    "wp-file-sync": "./lib/index.js"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "@types/node": "^16.7.10",
