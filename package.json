@@ -1,0 +1,31 @@
+{
+  "name": "wordpress-file-sync",
+  "version": "1.0.0",
+  "description": "Syncs files from a password protected wordpress page to a local directory",
+  "scripts": {
+    "build": "rm -rf build && tsc && rm -r build/__tests__",
+    "start": "npm run build && node build/index.js",
+    "test": "jest src --verbose",
+    "lint": "eslint src -c ./eslint.json --ext .ts"
+  },
+  "files": ["build"],
+  "author": "figl",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@types/node": "^16.7.10",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.1",
+    "jest": "^27.2.5",
+    "mockserver-node": "^5.11.2",
+    "ts-jest": "^27.0.5",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "axios": "^0.21.3",
+    "cheerio": "^1.0.0-rc.10",
+    "dotenv": "^10.0.0",
+    "form-data": "^4.0.0",
+    "query-string": "^7.0.1"
+  }
+}
