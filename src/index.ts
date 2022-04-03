@@ -2,9 +2,10 @@ import * as dotenv from "dotenv";
 const ENV_FILE_PATH = process.argv[2] ? `${process.argv[2]}/.env` : `${process.cwd()}/.env`
 dotenv.config({ path: ENV_FILE_PATH });
 import * as cheerio from "cheerio";
-import { updateCache, createNewCache } from "./cache";
+import { updateCache } from "./cache";
 import {login, getHtmlPageWithContent} from "./api";
 import { existsSync } from "fs";
+import { createCacheFile } from "./cacheFileApi";
 
 const CONTENT_PATH = process.argv[2] ? process.argv[2] : process.cwd() + "/files"
 
@@ -37,11 +38,11 @@ const parseData = (html: string) => {
 export const createOrUpdateCache = async (fileUrls: string[]) => {
   const cacheFileContent = existsSync(CONTENT_PATH);
 
-  if(cacheFileContent) {
-      updateCache(fileUrls);
-  } else {
-      createNewCache(fileUrls);
+  if(!cacheFileContent) {
+    createCacheFile()
+      
   }
+  updateCache(fileUrls);
 };
 
 const validateEnvVariables = () => {

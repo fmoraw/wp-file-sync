@@ -10,7 +10,8 @@ const mkdirSyncMock = jest.fn();
 jest.mock("fs", () => ({
     readFileSync: (param1: string) => readFileSyncMock(param1),
     writeFileSync: (param1: string, param2: string) => writeFileSyncMock(param1, param2),
-    mkdirSync: (param1: string) => mkdirSyncMock(param1)
+    mkdirSync: (param1: string) => mkdirSyncMock(param1),
+    existsSync: jest.fn()
 }));
 
 const jsonParseMock =  jest.spyOn(JSON, "parse");
@@ -25,19 +26,19 @@ describe("The cache file api", () => {
         expect(stringifySpy).toHaveBeenCalled();
         expect(writeFileSyncMock).toHaveBeenCalledWith(expect.anything(), expect.anything());
         expect(writeFileSyncMock.mock.calls).toEqual([
-            [`${process.cwd()}/src/cache.json`,"[[\"etag\",{\"url\":\"url\"}],[\"etag2\",{\"url\":\"url2\"}]]"]
+            [`${process.cwd()}/cache.json`,"[[\"etag\",{\"url\":\"url\"}],[\"etag2\",{\"url\":\"url2\"}]]"]
         ]);
     });
 
     it("should deserialize the cache", () => {
         const result = desirializeCache();
-        expect(readFileSyncMock).toHaveBeenCalledWith(`${process.cwd()}/src/cache.json`);
+        expect(readFileSyncMock).toHaveBeenCalledWith(`${process.cwd()}/cache.json`);
         expect(jsonParseMock).toHaveBeenCalledWith(serializedCache);
         expect(result.get("etag")).toEqual({url: "url"});
     });
 
     it("should create the cache directory", () => {
         createCacheDirectory();
-        expect(mkdirSyncMock).toHaveBeenLastCalledWith(`${process.cwd()}/src/files`);
+        expect(mkdirSyncMock).toHaveBeenLastCalledWith(`${process.cwd()}/files`);
     });
 });

@@ -9,9 +9,11 @@ export const createCacheDirectory = async () => {
         mkdirSync(CACHE_DIR);
     }
     if(!existsSync(CACHE_FILE_NAME)) {
-        writeFileSync(CACHE_FILE_NAME, JSON.stringify([]))
+        createCacheFile()
     }
 };
+
+export const createCacheFile = () => writeFileSync(CACHE_FILE_NAME, JSON.stringify([]))
 
 export const desirializeCache = (): Cache => {
     const cacheData = readFileSync(CACHE_FILE_NAME, { encoding: "utf-8" });

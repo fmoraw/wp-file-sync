@@ -1,10 +1,11 @@
 {
   "name": "@figl/wp-file-sync",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Syncs files from a password protected wordpress page to a local directory",
   "scripts": {
     "build": "rm -rf lib && tsc && rm -r lib/__tests__",
     "start": "npm run build && node lib/index.js",
+    "debug": "npm run build && node --inspect-brk lib/index.js",
     "test": "jest src --verbose",
     "lint": "eslint src -c ./eslint.json --ext .ts",
     "prepublish": "npm run build"
@@ -23,6 +24,7 @@
     "wp-file-sync": "./lib/index.js"
   },
   "devDependencies": {
+    "@types/cli-progress": "^3.9.2",
     "@types/jest": "^27.0.2",
     "@types/node": "^16.7.10",
     "@typescript-eslint/parser": "^5.0.0",
@@ -35,6 +37,7 @@
   "dependencies": {
     "axios": "^0.21.3",
     "cheerio": "^1.0.0-rc.10",
+    "cli-progress": "^3.10.0",
     "dotenv": "^10.0.0",
     "form-data": "^4.0.0",
     "query-string": "^7.0.1"

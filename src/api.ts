@@ -41,7 +41,7 @@ export const getHtmlPageWithContent = async (): Promise<string | void> => {
     };
   
     const response = await axios(axiosConfig).catch((error) => {
-      console.error(`Error: could not retrive url ${axiosConfig.url}! Status: ${error.response.status}`);
+      console.error(`could not retrive url ${axiosConfig.url}! Status: ${error.response.status}`);
     });
     if(response) {
       console.info("Retrieved html page successfully!");
@@ -51,7 +51,7 @@ export const getHtmlPageWithContent = async (): Promise<string | void> => {
     }
 };
 
-export const getEtag = async (fileUrl: string) => {
+export const getFileInfo = async (fileUrl: string): Promise<{lastModified: string} | void> => {
     const axiosConfig: AxiosRequestConfig = {
         method: "HEAD",
         headers: {
@@ -60,12 +60,15 @@ export const getEtag = async (fileUrl: string) => {
         url: `${fileUrl}`
       };
 
-    let result = await axios(axiosConfig).catch(error => {
-      console.error(error);
+    let result = await axios(axiosConfig).catch(_ => {
+      console.warn(`Could not get etag for url ${fileUrl}`);
     });
     if(result && result.headers) {
-        return removeQuotes(result.headers["etag"]);
+        return {
+          lastModified: removeQuotes(result.headers["last-modified"])
+        }
     }
+    return Promise.resolve()
 };
 
 export const downloadFile = async (fileUrl: string): Promise<{hasError?: boolean, buffer?: Buffer}> => {
@@ -78,10 +81,10 @@ export const downloadFile = async (fileUrl: string): Promise<{hasError?: boolean
         url: `${fileUrl}`
     };
 
-    console.info(`Downloading ${fileUrl}...`);
+    console.debug(`Downloading ${fileUrl}...`);
 
     const response = await axios(axiosConfig).catch(error => {
-      console.error(`Error: Could not download file from url ${fileUrl} skipping! Status: ${error.response?.status}`);
+      console.warn(`Could not download file from url ${fileUrl} skipping! Status: ${error.response?.status}`);
     });
 
     if(response && response.data) {

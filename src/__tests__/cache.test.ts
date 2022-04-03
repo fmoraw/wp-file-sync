@@ -1,12 +1,19 @@
-import {jest} from "@jest/globals";
-import { Cache, createNewCache, updateCache } from "../cache";
+import { jest } from "@jest/globals";
+import { Cache, updateCache } from "../cache";
 
 let urlToEtagMapper = new Map<string, string>();
-const downloadFileMock = jest.fn().mockImplementation(() => Promise.resolve(Buffer.alloc(1, "T")));
-const getEtagMock = jest.fn().mockImplementation((url: any) => urlToEtagMapper.get(url));
+const downloadFileMock = jest.fn().mockImplementation(() => {
+     return Promise.resolve(Buffer.alloc(1, "T"))
+});
+const getEtagMock = jest.fn().mockImplementation((url: any) => {
+    urlToEtagMapper.get(url)
+    return {
+        lastModified: "TEST"
+    }
+});
 jest.mock("../api",() => ({
     downloadFile: (args: any) => downloadFileMock(args),
-    getEtag: (url: string) => getEtagMock(url)
+    getFileInfo: (url: string) => getEtagMock(url)
 }));
 
 let mockCache: Cache | undefined  = new Map();
@@ -23,15 +30,15 @@ jest.mock("../cacheFileApi", () => ({
 
 type TestData = {
     testName: string
-    fileUrls: UrlWithEtag[];
+    fileUrls: UrlWithHash[];
     expectedDownloads: ExpectedDownload[];
     initialCache?: Cache;
     expectedCache: Cache;
 }
 
-type UrlWithEtag = {
+type UrlWithHash = {
     url: string
-    etag: string
+    hash: string
 }
 
 type ExpectedDownload = {
@@ -49,111 +56,43 @@ describe("The cache", () => {
         urlToEtagMapper.clear();
     }); 
 
-    describe("should be created", () => {
-        const testData: TestData[] = [
-            {
-                testName: "Should properly create a new cache with a single file",
-                fileUrls: [{
-                    url: "https://abc.de/files/fileName.pdf",
-                    etag: "etag1"
-                }],
-                expectedDownloads: [{
-                    filenName: "fileName.pdf",
-                }],
-                expectedCache: new Map([["etag1", {url: "https://abc.de/files/fileName.pdf"}]])
-            },
-            {
-                testName: "Should properly create a new cache with multiple files",
-                fileUrls: [{
-                        url: "https://abc.de/files/fileName.pdf",
-                        etag: "etag1",
-                    }, {
-                        url: "https://abc.de/files/fileName2.pdf",
-                        etag: "etag2",
-                    }
-                ],
-                expectedDownloads: [
-                    {filenName: "fileName.pdf"},
-                    {filenName: "fileName2.pdf"}
-                ],
-                expectedCache: new Map([
-                    ["etag1", {url: "https://abc.de/files/fileName.pdf"}],
-                    ["etag2", {url: "https://abc.de/files/fileName2.pdf"}]
-                ])
-            }
-        ];
-    
-        testData.forEach(testData => {
-            it(testData.testName, async () => {
-    
-                testData.fileUrls.forEach(value => {
-                    urlToEtagMapper.set(value.url, value.etag);
-                });
-          
-                await createNewCache(testData.fileUrls.flatMap((urlWithEtag) => urlWithEtag.url));
-               
-                testData.fileUrls.map((value, index) => {
-                    expect(getEtagMock).toHaveBeenNthCalledWith(
-                        index + 1,
-                        value.url
-                    );
-                    expect(downloadFileMock).toHaveBeenNthCalledWith(
-                        index + 1,
-                        value.url
-                    );
-                });
-                
-                expect(serializeCacheMock).toHaveBeenCalledWith(
-                    testData.expectedCache
-                );
-    
-                testData.expectedDownloads.forEach((download, index) => {
-                    expect(saveDownloadMock).toHaveBeenNthCalledWith(
-                        index + 1,
-                        download.filenName, 
-                        expect.anything()
-                    );
-                });
-            });
-        });
-    });
-
     describe("should be updated properly", () => {
         const testData: TestData[] = [
             {
                 testName: "Should properly update the cache",
                 fileUrls: [{
                     url: "https://abc.de/files/fileName.pdf",
-                    etag: "etag1"
+                    hash: "78a9a758d56810b3602818626d7b1c6ef2fcaf37682e14057ffd03443d92a225"
                 }, {
                     url: "https://abc.de/files/fileName2.pdf",
-                    etag: "etag2"
+                    hash: "3562bcb62d83f8e7b5b9df155e3fa23aaa029935219b336154a44631cbc31383"
                 }, {
                     url: "https://abc.de/files/fileName3.pdf",
-                    etag: "etag3"
+                    hash: "101f0d62a4e13942a309b2a9033f0095cee60af3e6599f9cf6549c5282aa2e15"
                 }],
                 expectedDownloads: [
                     {filenName: "fileName2.pdf"},
                     {filenName: "fileName3.pdf"},
                 ],
-                initialCache: new Map([["etag1", {url: "https://abc.de/files/fileName.pdf"}]]),
+                initialCache: new Map([["78a9a758d56810b3602818626d7b1c6ef2fcaf37682e14057ffd03443d92a225", {url: "https://abc.de/files/fileName.pdf"}]]),
                 expectedCache: new Map([
-                    ["etag1", {url: "https://abc.de/files/fileName.pdf"}],
-                    ["etag2", {url: "https://abc.de/files/fileName2.pdf"}],
-                    ["etag3", {url: "https://abc.de/files/fileName3.pdf"}]
+                    ["78a9a758d56810b3602818626d7b1c6ef2fcaf37682e14057ffd03443d92a225", {url: "https://abc.de/files/fileName.pdf"}],
+                    ["3562bcb62d83f8e7b5b9df155e3fa23aaa029935219b336154a44631cbc31383", {url: "https://abc.de/files/fileName2.pdf"}],
+                    ["101f0d62a4e13942a309b2a9033f0095cee60af3e6599f9cf6549c5282aa2e15", {url: "https://abc.de/files/fileName3.pdf"}]
                 ])
-            }, {
+            }, 
+            {
                 testName: "Should remove items from the cache",
                 fileUrls: [{
                     url: "https://abc.de/files/fileName2.pdf",
-                    etag: "etag2"
+                    hash: "3562bcb62d83f8e7b5b9df155e3fa23aaa029935219b336154a44631cbc31383"
                 }],
                 expectedDownloads: [{
                     filenName: "fileName2.pdf",
                 }],
-                initialCache: new Map([["etag1", {url: "https://abc.de/files/fileName.pdf"}]]),
+                initialCache: new Map([["78a9a758d56810b3602818626d7b1c6ef2fcaf37682e14057ffd03443d92a225", {url: "https://abc.de/files/fileName.pdf"}]]),
                 expectedCache: new Map([
-                    ["etag2", {url: "https://abc.de/files/fileName2.pdf"}]
+                    ["3562bcb62d83f8e7b5b9df155e3fa23aaa029935219b336154a44631cbc31383", {url: "https://abc.de/files/fileName2.pdf"}]
                 ])
             },
         ];
@@ -164,7 +103,7 @@ describe("The cache", () => {
                 mockCache = testData.initialCache;
     
                 testData.fileUrls.forEach(value => {
-                    urlToEtagMapper.set(value.url, value.etag);
+                    urlToEtagMapper.set(value.url, value.hash);
                 });
           
                 await updateCache(testData.fileUrls.flatMap((urlWithEtag) => urlWithEtag.url));
