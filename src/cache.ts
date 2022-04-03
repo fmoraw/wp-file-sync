@@ -1,5 +1,5 @@
-import crypto from "crypto"
-import cliProgress from "cli-progress"
+import crypto from "crypto";
+import cliProgress from "cli-progress";
 import { downloadFile, getFileInfo } from "./api";
 import { createCacheDirectory, desirializeCache, saveDownload, serializeCache } from "./cacheFileApi";
 
@@ -25,22 +25,22 @@ export const updateCache = async (fileUrls: string[]) => {
     let actualHashs: (string|undefined)[] = [];
     actualHashs = await Promise.all(fileUrls.map(async (url) => {
         const fileInfo = await getFileInfo(url);
-        cacheUpdateBar.increment()
+        cacheUpdateBar.increment();
         if(fileInfo && fileInfo.lastModified) {
-            const hash = generateHashForFile(url, fileInfo.lastModified)
+            const hash = generateHashForFile(url, fileInfo.lastModified);
             tmpCache.set(hash, url);
             return hash;
         }
     }));
-    cacheUpdateBar.stop()
-    console.debug(`Found ${actualHashs.length} files`)
+    cacheUpdateBar.stop();
+    console.debug(`Found ${actualHashs.length} files`);
     const newHashs = findNewHashs(actualHashs, cachedHashs);
-    const outDatedHashs = findOutDatedHashs(actualHashs, cachedHashs);
-    console.debug(`Found ${newHashs.length} new items to download`)
+    const outDatedHashs: string[] = findOutDatedHashs(actualHashs, cachedHashs);
+    console.debug(`Found ${newHashs.length} new items to download`);
     if(newHashs.length > 0) {
-        await downloadNewFiles(newHashs, tmpCache);
+        const failedDownloads: string[] = await downloadNewFiles(newHashs, tmpCache);
         updateCacheEntries(newHashs, tmpCache);
-        deleteOutDatedCacheEntries(outDatedHashs);
+        deleteOutDatedCacheEntries(outDatedHashs.concat(failedDownloads));
         serializeCache(cache);
     }
 };
@@ -79,6 +79,7 @@ const updateCacheEntries = (newHashs: (string|undefined)[], tmpCache: Map<string
 const getFileNameFromUrl = (url: string) =>  url.substr(url.lastIndexOf("/") + 1);
 
 const downloadNewFiles = async (newHashs: (string|undefined)[], tmpCache: Map<string, string>) => {
+    const failedDownloads: string[] = [];
     await Promise.all(
         newHashs.map(async (value) => {
             if(value && tmpCache.has(value)) {
@@ -91,16 +92,21 @@ const downloadNewFiles = async (newHashs: (string|undefined)[], tmpCache: Map<st
                 }
             } else {
                 console.error(`No url found for hash: ${value}`);
+                if(value) {
+                    failedDownloads.push(value);
+                }
+                else console.error("The hash is undefined");
             }
         })
     );
+    return Promise.resolve(failedDownloads);
 };
 
 const hashCode = (input: string): string => {
-    const secret = "SECRET"
+    const secret = "SECRET";
     const sha256Hasher = crypto.createHmac("sha256", secret);
 
     return sha256Hasher.update(input).digest("hex");
-}
+};
 
-const generateHashForFile = (url: string, lastModified: string): string => hashCode(url+lastModified)
+const generateHashForFile = (url: string, lastModified: string): string => hashCode(url+lastModified);

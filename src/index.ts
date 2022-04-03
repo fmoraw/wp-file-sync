@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-const ENV_FILE_PATH = process.argv[2] ? `${process.argv[2]}/.env` : `${process.cwd()}/.env`
+const ENV_FILE_PATH = process.argv[2] ? `${process.argv[2]}/.env` : `${process.cwd()}/.env`;
 dotenv.config({ path: ENV_FILE_PATH });
 import * as cheerio from "cheerio";
 import { updateCache } from "./cache";
@@ -7,11 +7,11 @@ import {login, getHtmlPageWithContent} from "./api";
 import { existsSync } from "fs";
 import { createCacheFile } from "./cacheFileApi";
 
-const CONTENT_PATH = process.argv[2] ? process.argv[2] : process.cwd() + "/files"
+const CONTENT_PATH = process.argv[2] ? process.argv[2] : process.cwd() + "/files";
 
 const init = async () => {
   if(!CONTENT_PATH) {
-    console.log(`Saving files to ${CONTENT_PATH}`)
+    console.log(`Saving files to ${CONTENT_PATH}`);
   }
 
   validateEnvVariables();
@@ -29,7 +29,7 @@ const parseData = (html: string) => {
     process.env.HTML_AHREF_ELEMENT_SELECTOR : "a[rel=\"noopener noreferrer\"]";
 
   const foundElements: string[] = [];
-  const elements = $(selector) as cheerio.Cheerio<cheerio.Element>
+  const elements = $(selector) as cheerio.Cheerio<cheerio.Element>;
   elements.map((_, el) => foundElements.push(el.attribs.href));
   console.info(`Found ${foundElements.length} links.`);
   return foundElements;
@@ -39,7 +39,7 @@ export const createOrUpdateCache = async (fileUrls: string[]) => {
   const cacheFileContent = existsSync(CONTENT_PATH);
 
   if(!cacheFileContent) {
-    createCacheFile()
+    createCacheFile();
       
   }
   updateCache(fileUrls);

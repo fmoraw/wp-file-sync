@@ -60,15 +60,15 @@ export const getFileInfo = async (fileUrl: string): Promise<{lastModified: strin
         url: `${fileUrl}`
       };
 
-    let result = await axios(axiosConfig).catch(_ => {
+    let result = await axios(axiosConfig).catch(() => {
       console.warn(`Could not get etag for url ${fileUrl}`);
     });
     if(result && result.headers) {
         return {
           lastModified: removeQuotes(result.headers["last-modified"])
-        }
+        };
     }
-    return Promise.resolve()
+    return Promise.resolve();
 };
 
 export const downloadFile = async (fileUrl: string): Promise<{hasError?: boolean, buffer?: Buffer}> => {

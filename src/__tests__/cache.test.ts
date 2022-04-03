@@ -3,13 +3,13 @@ import { Cache, updateCache } from "../cache";
 
 let urlToEtagMapper = new Map<string, string>();
 const downloadFileMock = jest.fn().mockImplementation(() => {
-     return Promise.resolve(Buffer.alloc(1, "T"))
+     return Promise.resolve(Buffer.alloc(1, "T"));
 });
 const getEtagMock = jest.fn().mockImplementation((url: any) => {
-    urlToEtagMapper.get(url)
+    urlToEtagMapper.get(url);
     return {
         lastModified: "TEST"
-    }
+    };
 });
 jest.mock("../api",() => ({
     downloadFile: (args: any) => downloadFileMock(args),

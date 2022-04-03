@@ -1,6 +1,6 @@
 {
   "name": "@figl/wp-file-sync",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Syncs files from a password protected wordpress page to a local directory",
   "scripts": {
     "build": "rm -rf lib && tsc && rm -r lib/__tests__",
@@ -8,7 +8,7 @@
     "debug": "npm run build && node --inspect-brk lib/index.js",
     "test": "jest src --verbose",
     "lint": "eslint src -c ./eslint.json --ext .ts",
-    "prepublish": "npm run build"
+    "release": "npm run build && npm pack"
   },
   "main": "index.js",
   "files": [
